@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <!-- JQuery CSS -->
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/redmond/jquery-ui.css" type="text/css">
+  <!-- jqGrid CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/jqgrid/4.6.0/css/ui.jqgrid.css" type="text/css">
+
+  <!-- The actual JQuery code -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <!-- The JQuery UI code -->
+  <script type="text/javascript" src="https://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+  <!-- The jqGrid language file code-->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/jqgrid/4.6.0/i18n/grid.locale-kr.js"></script>
+  <!-- The atual jqGrid code -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/jqgrid/4.6.0/jquery.jqGrid.src.js"></script>
+
+  <style>
+    .button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f0f0f0;
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      background-color: #e7e7e7;
+    }
+  </style>
+</head>
+
+<body style="">
+<table id="ordersCentral"></table>
+<div id="pager"></div>
+
+<h1>Приём заказа с центрального склада</h1>
+<form onsubmit="return submitOrder();">
+  <div>
+    <label for="orderId">ID заказа:</label>
+    <input type="number" id="orderId" name="orderId" required>
+  </div>
+  <div>
+    <label for="customerId">ID клиента:</label>
+    <input type="number" id="customerId" name="customerId" required>
+  </div>
+  <div>
+    <label for="status">Статус:</label>
+    <select id="status" name="status" required>
+      <option value="READY_FOR_PICKUP">Готов к выдаче</option>
+      <option value="ACCEPTED">Выполнен</option>
+      <option value="NOT_PICKED_UP">Не забрали</option>
+      <!-- Другие статусы можно добавить сюда -->
+    </select>
+  </div>
+  <div>
+    <label for="pickUpPointId">ID пункта выдачи:</label>
+    <input type="number" id="pickUpPointId" name="pickUpPointId" required>
+  </div>
+  <div>
+    <label for="orderDate">Дата заказа:</label>
+    <input type="datetime-local" id="orderDate" name="orderDate" required>
+  </div>
+  <button type="submit" id="addButton">Добавить заказ</button>
+</form>
+
+<script>
+  $(document).ready(function () {
+    $("#ordersCentral").jqGrid({
+      url: "/api/orders/central",
+      mtype: "GET",
+      datatype: "json",
+      colNames:['Order_Id','Customer_Id', 'Status_Order', 'Pick_Up_Point_Id', 'Order_Date'],
+      colModel:[
+        {name:'orderId',index:'orderId',  width:80},
+        {name:'customerId',index:'customerId', width:80},
+        {name:'status',index:'status', width:100},
+        {name:'pickUpPointId',index:'pickUpPointId', width:100},
+        {name:'orderDate',index:'orderDate', width:100}
+      ],
+      autowidth: true,
+      search:true,
+      pager:'#pager',
+      jsonReader: {cell:""},
+      rowNum: 20,
+      rowList: [5, 10, 20, 50],
+      viewrecords: true,
+      height: "100%",
+      caption: "Таблица заказов с центрального склада".fontsize(15)
+    });
+  });
+</script>
+<script>
+  function submitOrder() {
+    // Собираем данные из формы
+    const orderData = {
+      orderId: document.getElementById('orderId').value,
+      customerId: document.getElementById('customerId').value,
+      status: document.getElementById('status').value,
+      pickUpPointId: document.getElementById('pickUpPointId').value,
+      orderDate: document.getElementById('orderDate').value
+    };
+
+    // Выводим данные в консоль для демонстрации
+    console.log('Order Data:', orderData);
+
+    // Здесь можно добавить код для отправки данных на сервер
+    // Например, используя fetch API
+      try {
+        const response = fetch('/api/orders/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка при отправке заказа: ' + response.statusText);
+        }
+
+        const responseData = response.json();
+        console.log('Успешно добавлен заказ:', responseData);
+        return responseData; // Возвращаем данные, если нужно что-то с ними сделать дальше
+      } catch (error) {
+        console.error('Ошибка при отправке заказа:', error);
+        throw error; // Пробрасываем ошибку дальше для обработки
+      }
+    // Предотвращаем стандартное поведение формы
+    return false;
+  }
+</script>
+<script>
+
+</script>
+<h2> </h2>
+<button class="button" onclick="window.location.href='WarehouseManagement'">Назад</button>
+</body>
+</head>
+
+</html>

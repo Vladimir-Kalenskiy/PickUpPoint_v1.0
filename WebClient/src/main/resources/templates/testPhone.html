@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- JQuery CSS -->
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/redmond/jquery-ui.css" type="text/css">
+
+
+  <title>Заказы покупателя по номеру телефона</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <script>
+    function searchOrders() {
+      var phone = document.getElementById('phoneInput').value;
+      // Отправка запроса на REST контроллер
+      fetch('/api/orders/ready/' + phone)
+              .then(response => response.json())
+              .then(data => {
+                // Построение таблицы заказов
+                var ordersTable = '<table>';
+                ordersTable += '<tr><th>OrderID</th><th>CustomerID</th><th>Status</th><th>PickUpPointID</th><th>OrderDate</th></tr>';
+                data.forEach(order => {
+                  ordersTable += '<tr>';
+                  ordersTable += '<td>' + order.orderId + '</td>';
+                  ordersTable += '<td>' + order.customerId + '</td>';
+                  ordersTable += '<td>' + order.status + '</td>';
+                  ordersTable += '<td>' + order.pickUpPointId + '</td>';
+                  ordersTable += '<td>' + order.orderDate + '</td>';
+                  ordersTable += '</tr>';
+                });
+                ordersTable += '</table>';
+                // Вставка таблицы в документ
+                document.getElementById('ordersTable').innerHTML = ordersTable;
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+    }
+
+    function fetchCustomerAndVerifyCode() {
+      var phone = document.getElementById('phoneInput').value;
+      var code = document.getElementById('code').value;
+      var orderId = document.getElementById('orderId').value;
+      fetch('/api/customer/code/' + phone)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
+              .then(customer => {
+                const value = customer['codeVerification'];
+                if (value.toString() === code.toString()) {
+                  console.log('Код верификации совпадает.');
+                  // Код совпадает, удаляем заказ
+                  deleteOrder(orderId);
+                } else {
+                  console.log('Код верификации не совпадает.');
+                }
+              })
+              .catch(error => {
+                console.error('Ошибка при запросе к REST контроллеру:', error);
+              });
+    }
+
+    function deleteOrder(orderId) {
+      fetch('/api/orders/delete/' + orderId, {
+        method: 'DELETE' // Указываем метод HTTP DELETE для удаления ресурса
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                console.log('Заказ успешно удален:', orderId);
+              })
+              .catch(error => {
+                console.error('Ошибка при удалении заказа:', error);
+              });
+    }
+  </script>
+</head>
+<body>
+<h2>Заказы покупателя по номеру телефона</h2>
+<div>
+  <label for="phoneInput">Номер телефона:</label>
+  <input type="text" id="phoneInput" name="phone">
+  <button onclick="searchOrders()">Поиск заказов</button>
+</div>
+<div id="ordersTable">
+  <!-- Здесь будет отображена таблица заказов -->
+</div>
+
+<h2>Укажите идентификатор заказа (order_id) для передачи заказа клиенту:</h2>
+<div>
+  <label for="orderId">OrderId:</label>
+  <input type="text" id="orderId" name="orderId">
+  <label for="code">Код верификации:</label>
+  <input type="number" id="code" name="code">
+  <button type="button" onclick="fetchCustomerAndVerifyCode()">Провести выдачу заказа</button>
+</div>
+<button onclick="window.history.back();">Назад</button>
+</body>
+</html>

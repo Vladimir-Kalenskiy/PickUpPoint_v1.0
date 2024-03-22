@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Fulfillment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f0f0f0;
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      background-color: #e7e7e7;
+    }
+  </style>
+</head>
+<body>
+<h2>Выдача заказов</h2>
+<button class="button" onclick="window.location.href='/web/PickUpOrderByPhone'">По номеру телефона</button>
+<button class="button" onclick="alert('По идентификатору заказа')">По коду</button>
+<button class="button" onclick="window.location.href='/web/'">Назад</button>
+</body>
+</html>
